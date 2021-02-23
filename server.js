@@ -1,3 +1,5 @@
+var databaseURI =
+  "mongodb+srv://password2:rhyme@cluster0.77bp9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -5,12 +7,19 @@ const app = express();
 
 const mongo = require("mongodb");
 const mongoose = require("mongoose"); // Need to require mongoose
-//** 1) Install and set up mongoose. (connected it to heroku as well.)
-mongoose.connect(process.env.MONGO_URI, {
-  // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
+
+// //** 1) Install and set up mongoose. (connected it to heroku as well.)
+// mongoose.connect(process.env.MONGO_URI, {
+//   // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+mongoose.connect(databaseURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+const Schema = mongoose.Schema;
 
 // Basic Configuration
 const port = process.env.PORT || 3000;

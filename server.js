@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
+const mongo = require("mongodb");
 const mongoose = require("mongoose"); // Need to require mongoose
 //** 1) Install and set up mongoose. (connected it to heroku as well.)
 mongoose.connect(process.env.MONGO_URI, {

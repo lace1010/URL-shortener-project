@@ -1,31 +1,34 @@
-var databaseURI =
-  "mongodb+srv://password2:rhyme@cluster0.77bp9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
 
+const dns = require("dns");
 const mongo = require("mongodb");
 const mongoose = require("mongoose"); // Need to require mongoose
+const shortid = require("shortid");
 
-// //** 1) Install and set up mongoose. (connected it to heroku as well.)
-// mongoose.connect(process.env.MONGO_URI, {
-//   // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-
-mongoose.connect(databaseURI, {
+// Install and set up mongoose. (connected it to heroku as well by editing config key:values)
+mongoose.connect(process.env.MONGO_URI, {
+  // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 const Schema = mongoose.Schema;
+
+// Use the next four lines to see if you are conneted to mongoose correctly
+var db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Connection Successful!");
+});
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
 // app.Post does not work unless we use body-parser middleware function here and call on the following two app.use
 const bodyParser = require("body-parser"); // Must add bodyParser middleware to get info from body in html for .post()
+const { doesNotMatch } = require("assert");
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -44,12 +47,35 @@ app.get("/api/hello", (req, res) => {
   res.json({ greeting: "hello API" });
 });
 
+// set a urlSchema
+const urlSchema = new Schema({
+  original_url: String,
+  short_url: String,
+});
+
+// set a model for shortURL using urlSchema
+const ShortURL = mongoose.model("ShortURL", urlSchema);
+
 app.post("/api/shorturl/new", (req, res) => {
-  if (req.body.url) {
-    res.json({ original_url: req.body.url, short_url: "number" });
-  } else {
-    res.json({ error: "invalid url" });
-  }
+  // variables to pass to json Object to make code cleaner
+  let clientRequestedURL = req.body.url;
+  let shortcut = shortid.generate(); // shortid.generate() is a short non-sequential url-friendly unique id generator
+
+  // create new model
+  let newURL = new ShortURL({
+    original_url: clientRequestedURL,
+    short_url: shortcut,
+  });
+
+  // save the new model to database and return json if sucessful
+  newURL.save((error, newurl) => {
+    if (error) return console.log(error);
+    console.log(newurl);
+    res.json({
+      original_url: clientRequestedURL,
+      short_url: shortcut,
+    });
+  });
 });
 
 app.listen(port, () => {

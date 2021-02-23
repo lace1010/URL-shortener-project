@@ -4,11 +4,11 @@ const cors = require("cors");
 const app = express();
 
 const dns = require("dns");
-const mongo = require("mongodb");
 const mongoose = require("mongoose"); // Need to require mongoose
 const shortid = require("shortid");
 
 // Install and set up mongoose. (connected it to heroku as well by editing config key:values)
+// Can't be MONGO_URI like in first challenges because heroku needs it to be different
 mongoose.connect(process.env.PASS_URI, {
   // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
   useNewUrlParser: true,
@@ -59,8 +59,13 @@ const ShortURL = mongoose.model("ShortURL", urlSchema);
 app.post("/api/shorturl/new", (req, res) => {
   // variables to pass to json Object to make code cleaner
   let clientRequestedURL = req.body.url;
-  console.log(clientRequestedURL);
   let shortcut = shortid.generate(); // shortid.generate() is a short non-sequential url-friendly unique id generator
+
+  // Check if clientRequestedURL is valid.
+  if (!clientRequestedURL.includes("http")) {
+    res.json({ error: "invalid url" });
+    return;
+  }
 
   // create new model
   let newURL = new ShortURL({
@@ -83,7 +88,7 @@ app.get("/api/shorturl/:shortcut", (req, res) => {
   let userGeneratedShortcut = req.params.shortcut;
   ShortURL.find({ short_url: userGeneratedShortcut }, (error, url) => {
     // Returns an array so we must use [0] to get correct url
-    if (error) return console.log(error);
+    if (error) res.json({ error: "invalid url" });
     // console.log(url)
     // Must use [0] because find returns an array
     res.redirect(url[0].original_url); //res.redirect() takes a string and redirects you to that website

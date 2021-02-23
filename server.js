@@ -42,7 +42,7 @@ app.post("/api/shorturl/new", (req, res) => {
   ) {
     res.json({ original_url: req.body.url, short_url: "number" });
   } else {
-    res.json({ error: "Invalid URL" });
+    res.json({ error: "invalid url" });
   }
 });
 

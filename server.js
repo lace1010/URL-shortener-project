@@ -14,7 +14,7 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema; // need this or the new Schema doesn't work later on in code.
 
 // Use the next four lines to see if you are conneted to mongoose correctly
 var db = mongoose.connection;
@@ -59,6 +59,7 @@ const ShortURL = mongoose.model("ShortURL", urlSchema);
 app.post("/api/shorturl/new", (req, res) => {
   // variables to pass to json Object to make code cleaner
   let clientRequestedURL = req.body.url;
+  console.log(clientRequestedURL);
   let shortcut = shortid.generate(); // shortid.generate() is a short non-sequential url-friendly unique id generator
 
   // create new model
@@ -70,11 +71,22 @@ app.post("/api/shorturl/new", (req, res) => {
   // save the new model to database and return json if sucessful
   newURL.save((error, newurl) => {
     if (error) return console.log(error);
-    console.log(newurl);
     res.json({
-      original_url: clientRequestedURL,
-      short_url: shortcut,
+      original_url: newURL.original_url,
+      short_url: "/api/shorturl/" + newURL.short_url,
     });
+  });
+});
+
+// Take the shortURL and get its' oringal url and go there.
+app.get("/api/shorturl/:shortcut", (req, res) => {
+  let userGeneratedShortcut = req.params.shortcut;
+  ShortURL.find({ short_url: userGeneratedShortcut }, (error, url) => {
+    // Returns an array so we must use [0] to get correct url
+    if (error) return console.log(error);
+    // console.log(url)
+    // Must use [0] because find returns an array
+    res.redirect(url[0].original_url); //res.redirect() takes a string and redirects you to that website
   });
 });
 

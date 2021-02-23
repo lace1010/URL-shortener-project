@@ -9,7 +9,7 @@ const mongoose = require("mongoose"); // Need to require mongoose
 const shortid = require("shortid");
 
 // Install and set up mongoose. (connected it to heroku as well by editing config key:values)
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.PASS_URI, {
   // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
   useNewUrlParser: true,
   useUnifiedTopology: true,

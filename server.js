@@ -81,14 +81,18 @@ app.post("/api/shorturl/new", (req, res) => {
 });
 
 // Take the shortURL and get its' oringal url and go there.
-app.get("/api/shorturl/:shortcut", (req, res) => {
+// Must use async function to have surl find a short url before rest of function begins operating
+app.get("/api/shorturl/:shortcut", async (req, res) => {
   let userGeneratedShortcut = req.params.shortcut;
-  ShortURL.find({ short_url: userGeneratedShortcut }, (error, url) => {
-    // Returns an array so we must use [0] to get correct url
-    if (error) return res.json({ error: "invalid url" });
-    // Must use [0] because find returns an array
-    res.redirect(url[0].original_url); //res.redirect() takes a string and redirects you to that website
-  });
+  // First find a object in datanase that matches the short_url (We must use await so the rest of the function doesn't operate unitl a result is found (or not found and sends error))
+  let surl = await ShortURL.findOne({ short_url: userGeneratedShortcut });
+  // If a short_url exists in the database try
+  if (surl) {
+    // reddirect the page to the desired url
+    res.redirect(surl.original_url);
+  }
+  // handles scenario wher a short url is not found in the database
+  else return res.json({ error: "shorturl does not exist" });
 });
 
 app.listen(port, () => {

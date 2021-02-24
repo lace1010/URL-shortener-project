@@ -2,8 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
-
-const dns = require("dns");
 const mongoose = require("mongoose"); // Need to require mongoose
 const shortid = require("shortid");
 
@@ -28,7 +26,6 @@ const port = process.env.PORT || 3000;
 
 // app.Post does not work unless we use body-parser middleware function here and call on the following two app.use
 const bodyParser = require("body-parser"); // Must add bodyParser middleware to get info from body in html for .post()
-const { doesNotMatch } = require("assert");
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -77,8 +74,8 @@ app.post("/api/shorturl/new", (req, res) => {
   newURL.save((error, newurl) => {
     if (error) return console.log(error);
     res.json({
-      original_url: newURL.original_url,
-      short_url: "/api/shorturl/" + newURL.short_url,
+      original_url: newurl.original_url,
+      short_url: newurl.short_url,
     });
   });
 });
@@ -88,8 +85,7 @@ app.get("/api/shorturl/:shortcut", (req, res) => {
   let userGeneratedShortcut = req.params.shortcut;
   ShortURL.find({ short_url: userGeneratedShortcut }, (error, url) => {
     // Returns an array so we must use [0] to get correct url
-    if (error) res.json({ error: "invalid url" });
-    // console.log(url)
+    if (error) return res.json({ error: "invalid url" });
     // Must use [0] because find returns an array
     res.redirect(url[0].original_url); //res.redirect() takes a string and redirects you to that website
   });

@@ -2,13 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
+
 const mongoose = require("mongoose"); // Need to require mongoose
 const shortid = require("shortid");
 
-// Install and set up mongoose. (connected it to heroku as well by editing config key:values)
+// Install and set up mongoose. (connected it to mongoDB and heroku as well by editing config key:values)
 // Can't be MONGO_URI like in first challenges because heroku needs it to be different
 mongoose.connect(process.env.PASS_URI, {
-  // The MONGO_URI string is in sample.env. Be sure to change <password> to the user's actual password for mongoose to connect to the database
+  // Be sure to change <password> to the user's actual password for mongoose to connect to the database
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -32,7 +33,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json()); // In order to parse JSON data sent in the POST request,
 
 app.use(cors());
-
 app.use("/public", express.static(`${process.cwd()}/public`));
 
 app.get("/", (req, res) => {
